@@ -1,23 +1,41 @@
 package service
 
 import (
+	"github.com/arunsraga/goblog/common/monitoring"
+	"github.com/arunsraga/goblog/common/router"
+	// "github.com/callistaenterprise/goblog/common/tracing"
 	"github.com/gorilla/mux"
+	"net/http"
+	"github.com/sirupsen/logrus"
 )
 
-// Function that returns a pointer to a mux.Router we can use as a handler.
+
+// NewRouter creates a mux.Router and returns a pointer to it.
 func NewRouter() *mux.Router {
 
-    // Create an instance of the Gorilla router
-	router := mux.NewRouter().StrictSlash(true)
-	
-	// Iterate over the routes we declared in routes.go and attach them to the router instance
+	muxRouter := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-	    
-	    // Attach each route, uses a Builder-like pattern to set each route up.
-		router.Methods(route.Method).
-                Path(route.Pattern).
-                Name(route.Name).
-                Handler(route.HandlerFunc)
+
+		summaryVec := monitoring.BuildSummaryVec(route.Name, route.Method+" "+route.Pattern)
+
+		// Add route to muxRouter, including middleware chaining and passing the summaryVec to the WithMonitoring func.
+		muxRouter.Methods(route.Method).
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(monitoring.WithMonitoring(withTracing(route.HandlerFunc, route), route, summaryVec))
 	}
-	return router
+
+	logrus.Infoln("Successfully initialized routes including Prometheus.")
+	return muxRouter
+}
+
+func withTracing(next http.Handler, route router.Route) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// span := tracing.StartHTTPTrace(req, route.Name)
+		// defer span.Finish()
+
+		// ctx := tracing.UpdateContext(req.Context(), span)
+		// next.ServeHTTP(rw, req.WithContext(ctx))
+		next.ServeHTTP(rw, req)
+	})
 }
