@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"fmt"
-		"github.com/arunsraga/goblog/accountservice/dbclient"
+	"github.com/arunsraga/goblog/accountservice/dbclient"
 )
 
 var DBClient dbclient.IBoltClient
@@ -33,4 +33,11 @@ func GetAccount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
+}
+
+
+func GetAccount1(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	// w.Write("data")
+	return
 }

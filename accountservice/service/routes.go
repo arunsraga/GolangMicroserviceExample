@@ -15,6 +15,13 @@ var routes = Routes{
 		true,
 	},
 	Route{
+		"GetAccount1", // Name
+		"GET",        // HTTP method
+		"/accounts1/{accountId}", // Route pattern
+		GetAccount1,
+		true,
+	},
+	Route{
 		"Prometheus",
 		"GET",
 		"/metrics",
